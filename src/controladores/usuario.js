@@ -55,7 +55,6 @@ const consultar_Usuario = async (req, res) =>{
     }
 
 
-
 }
 
  //função para atualizar um candidato
@@ -119,13 +118,7 @@ return res.status(201).json({mensagem: `O usuario: ${nome_completo} foi deletado
     
 }
 
-
 }
-
-
-
-
-
 
 
 

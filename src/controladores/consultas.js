@@ -23,21 +23,35 @@ const consultar_por_curso = async (req, res) =>{
 
 
 }
+//Total de Alunos por curso
+const consultarTotalPorCurso = async (req, res) => {
+    try {
+      const resultado = await query(`
+        SELECT curso, COUNT(*) AS total
+        FROM Candidatos
+        GROUP BY curso
+        ORDER BY total DESC
+      `);
+  
+      return res.status(200).json(resultado.rows);
+    } catch (error) {
+      return res.status(500).json({ mensagem: `Erro interno do servidor: ${error.message}` });
+    }
+  };
+  
 
+
+
+//consulta candidato por idade
 const consultarPorIdade = async (req, res) => {
-    // você está recebendo a idade no body; converta para número
-    const idadeAlvo = Number(req.body.idade);
+    
+    const idadeAlvo = Number(req.body.idade)
   
     if (!idadeAlvo || isNaN(idadeAlvo)) {
-      return res
-        .status(400)
-        .json({ mensagem: 'Envie “idade” como número inteiro.' });
+      return res.status(400).json({ mensagem: 'Envie “idade” como número inteiro.' })
     }
   
     try {
-      /*  A função age(current_date, data_nascimento) devolve um INTERVAL.
-          date_part('year', …) extrai só o componente “anos”.
-          Assim o filtro pega exatamente quem possui a idade solicitada.          */
       const sql = `
         SELECT  id,
                 nome_completo,
@@ -46,20 +60,20 @@ const consultarPorIdade = async (req, res) => {
                 date_part('year', age(current_date, data_nascimento)) AS idade
           FROM  Candidatos
          WHERE  date_part('year', age(current_date, data_nascimento)) = $1
-      `;
+      `
   
-      const { rows } = await query(sql, [idadeAlvo]);
+      const { rows } = await query(sql, [idadeAlvo])
   
-      return res.status(200).json(rows);           
+      return res.status(200).json(rows)          
     } catch (error) {
       console.error(error);
-      return res
-        .status(500)
-        .json({ mensagem: `Erro interno do servidor: ${error.message}` });
+      return res.status(500).json({ mensagem: `Erro interno do servidor: ${error.message}` })
     }
   };
 
 
+
+  //consulta quem mais demonstrou interesse
   const consultarMaisInteressados = async (req, res) => {
 
     try {
@@ -76,9 +90,44 @@ const consultarPorIdade = async (req, res) => {
   
       const { rows } = await query(sql);
   
-      return res.status(200).json(rows); // Lista ordenada do maior pro menor interesse
+      return res.status(200).json(rows); 
     } catch (error) {
       console.error(error.message);
+      return res.status(500).json({ mensagem: `Erro interno do servidor: ${error.message}` });
+    }
+  };
+
+  const filtrarPorPeriodo = async (req, res) =>{
+        const {periodo} = req.body
+
+    if(!periodo){
+        return res.status(400).json({mensagem: 'perido não informado'})
+    }
+
+    try {
+
+        const sql = 'select * from Candidatos where periodo >= $1'
+        const candidato = await query(sql, [periodo])
+
+        return res.status(200).json(candidato.rows)
+        
+    } catch (error) {
+        return res.status(500).json({ mensagem: `Erro interno do servidor: ${error.message}` });
+    }
+
+
+  }
+
+  const consultarCandidatosComIdade = async (req, res) => {
+    try {
+      const resultado = await query(`
+        SELECT *, date_part('year', age(data_nascimento)) AS idade 
+        FROM Candidatos 
+        ORDER BY idade ASC
+      `);
+  
+      return res.status(200).json(resultado.rows);
+    } catch (error) {
       return res.status(500).json({ mensagem: `Erro interno do servidor: ${error.message}` });
     }
   };
@@ -93,8 +142,17 @@ const consultarPorIdade = async (req, res) => {
 
 
 
+
+  
+
+
+
+
 module.exports = {
     consultar_por_curso ,
     consultarPorIdade, 
-    consultarMaisInteressados
+    consultarMaisInteressados ,
+    filtrarPorPeriodo ,
+    consultarTotalPorCurso ,
+    consultarCandidatosComIdade
 }
