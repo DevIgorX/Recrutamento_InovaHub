@@ -42,6 +42,11 @@ const consultarTotalPorCurso = async (req, res) => {
 
 
 
+
+
+
+
+  
 //consulta candidato por idade
 const consultarPorIdade = async (req, res) => {
     
@@ -70,6 +75,7 @@ const consultarPorIdade = async (req, res) => {
       return res.status(500).json({ mensagem: `Erro interno do servidor: ${error.message}` })
     }
   };
+
 
 
 
@@ -131,6 +137,33 @@ const consultarPorIdade = async (req, res) => {
       return res.status(500).json({ mensagem: `Erro interno do servidor: ${error.message}` });
     }
   };
+
+
+  const Filtra_curso_periodo = async (req, res) => {
+    const { curso, periodo } = req.body
+
+    if (!curso || !periodo) {
+        return res.status(400).json({ mensagem: 'Por favor, informe o curso e o período desejados.' });
+    }
+
+    try {
+        const sql = 'SELECT * FROM Candidatos WHERE curso = $1 AND periodo = $2';
+        const params = [curso, periodo];
+        const resultado = await query(sql, params);
+
+        if (resultado.rowCount === 0) {
+            return res.status(404).json({ mensagem: 'Nenhum candidato encontrado para o curso e período informados.' });
+        }
+
+        return res.status(200).json(resultado.rows);
+    } catch (error) {
+        console.error(error.message);
+        return res.status(500).json({ mensagem: `Erro interno do servidor: ${error.message}` });
+    }
+  
+  }
+
+  
   
 
 
@@ -154,5 +187,6 @@ module.exports = {
     consultarMaisInteressados ,
     filtrarPorPeriodo ,
     consultarTotalPorCurso ,
-    consultarCandidatosComIdade
+    consultarCandidatosComIdade ,
+    Filtra_curso_periodo 
 }
